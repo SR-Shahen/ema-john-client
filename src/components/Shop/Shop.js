@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import useProducts from '../../hooks/useProducts';
+
 import { addToDb, getStoredCart } from '../../utilities/fakedb';
 import Cart from '../Cart/Cart';
 import Product from '../Product/Product';
 import './Shop.css';
 
 const Shop = () => {
-    const [products, setProducts] = useProducts();
     const [cart, setCart] = useState([]);
     const [pageCount, setPageCount] = useState(0);
     const [page, setPage] = useState(0);
     const [size, setSize] = useState(10);
+    const [products, setProducts] = useState([]);
+
+    useEffect(() => {
+        fetch(`http://localhost:5000/product?page=${page}&size=${size}`)
+            .then(res => res.json())
+            .then(data => setProducts(data));
+    }, [page, size]);
     useEffect(() => {
         fetch('http://localhost:5000/productCount')
             .then(res => res.json())
@@ -55,15 +61,19 @@ const Shop = () => {
     }
 
     return (
+
         <div className='shop-container'>
-            <div className="products-container">
-                {
-                    products.map(product => <Product
-                        key={product._id}
-                        product={product}
-                        handleAddToCart={handleAddToCart}
-                    ></Product>)
-                }
+            <div>
+                <div className="products-container">
+                    {
+                        products.map(product => <Product
+                            key={product._id}
+                            product={product}
+                            handleAddToCart={handleAddToCart}
+                        ></Product>)
+                    }
+
+                </div>
                 <div className='pagination'>
                     {
                         [...Array(pageCount).keys()]
@@ -80,6 +90,7 @@ const Shop = () => {
                     </select>
                 </div>
             </div>
+
             <div className="cart-container">
                 <Cart cart={cart}>
                     <Link to="/orders">
@@ -88,6 +99,8 @@ const Shop = () => {
                 </Cart>
             </div>
         </div>
+
+
     );
 };
 
